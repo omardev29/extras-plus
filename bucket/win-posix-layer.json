@@ -5,6 +5,7 @@
     "license": "MIT",
     "url": "https://github.com/omardev29/win-posix-layer/archive/refs/heads/main.zip",
     "hash": "99118edbe19cee015f384356f409cd3ae8f7465892e0dc5f74b2449ef9a0372e",
+    "checkver": "github",
     "extract_dir": "win-posix-layer-main",
     "pre_install": [
         "Get-ChildItem \"$dir\" -Recurse | Where-Object { $_.Name -match '^(LICENSE|README\\.md)$' } | Remove-Item -Force -ErrorAction SilentlyContinue"
