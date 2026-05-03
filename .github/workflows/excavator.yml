@@ -1,0 +1,46 @@
+name: Excavator
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */4 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  excavator:
+    name: Excavator
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Bucket
+        uses: actions/checkout@v4
+
+      - name: Setup Scoop
+        run: |
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          irm get.scoop.sh | iex
+          scoop install git sudo
+
+      - name: Setup Cache
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\scoop
+          key: ${{ runner.os }}-scoop-${{ hashFiles('bucket/*.json') }}
+          restore-keys: ${{ runner.os }}-scoop-
+
+      - name: Run Excavator
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          scoop checkver -u
+          $diff = git diff --name-only
+          if ($diff) {
+            git add .
+            git commit -m "chore(bucket): update manifests [excavator]"
+            git push
+          } else {
+            Write-Host "No updates available."
+          }

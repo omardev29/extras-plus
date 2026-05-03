@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test_powershell:
+    name: WindowsPowerShell
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Bucket
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Run Tests
+        shell: powershell
+        run: Invoke-Pester -Path "$env:GITHUB_WORKSPACE\bucket\test.ps1" -PassThru
+
+  test_pwsh:
+    name: PowerShell
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Bucket
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Run Tests
+        shell: pwsh
+        run: Invoke-Pester -Path "$env:GITHUB_WORKSPACE\bucket\test.ps1" -PassThru
