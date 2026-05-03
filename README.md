@@ -27,6 +27,12 @@ scoop install extras-plus/<app-name>
 | App | Description |
 |-----|-------------|
 | [simpmusic](https://simpmusic.org) | Cross-platform YouTube Music client with SponsorBlock, synced lyrics, and more |
+| [godot_secure_camellia](https://github.com/KnifeXRage/Godot-Secure) | Godot engine source patcher for Camellia-256 encryption (Godot 4.6+) |
+| [godot_secure_aes](https://github.com/KnifeXRage/Godot-Secure) | Godot engine source patcher for AES-256 encryption (Godot 4.6+) |
+
+## Disclaimer
+
+This bucket only provides installation manifests for publicly available software. All trademarks, copyrights, and software belong to their respective owners. The maintainer of this bucket is not affiliated with, endorsed by, or responsible for the functionality of any application distributed through it. Use at your own risk.
 
 ## License
 

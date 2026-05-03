@@ -1,0 +1,4 @@
+Created On - 2026-05-03_19-57-27-727777
+This is Godot-Secure Log file, SAVE IT to secure place for later getting values.
+
+Error: No valid Godot Source Detected in the Specified Directory.
