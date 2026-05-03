@@ -17,6 +17,7 @@
     "shortcuts": [
         ["SimpMusic.exe", "SimpMusic"]
     ],
+    "bin": "SimpMusic.exe",
     "checkver": "github",
     "autoupdate": {
         "architecture": {
