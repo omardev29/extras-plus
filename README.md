@@ -34,6 +34,7 @@ scoop install extras-plus/<app-name>
 
 | App | Description |
 |-----|-------------|
+| [win-posix-layer](https://github.com/omardev29/win-posix-layer) | POSIX layer with Linux-like commands for PowerShell on Windows |
 | [godot_secure_camellia](https://github.com/KnifeXRage/Godot-Secure) | Godot engine source patcher for Camellia-256 encryption (Godot 4.6+) |
 | [godot_secure_aes](https://github.com/KnifeXRage/Godot-Secure) | Godot engine source patcher for AES-256 encryption (Godot 4.6+) |
 
