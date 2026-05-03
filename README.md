@@ -28,10 +28,6 @@ scoop install extras-plus/<app-name>
 |-----|-------------|
 | [simpmusic](https://simpmusic.org) | Cross-platform YouTube Music client with SponsorBlock, synced lyrics, and more |
 
-## Adding New Apps
-
-To add a new app, create a JSON manifest in the `bucket/` directory following the [Scoop App Manifest format](https://github.com/ScoopInstaller/Scoop/wiki/App-Manifests).
-
 ## License
 
 [MIT License](LICENSE)
