@@ -26,7 +26,10 @@ jobs:
           # Refresh PATH so scoop is available in this session
           $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
-          scoop install git
+          scoop install git python
+
+          # Refresh PATH again for python
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
           # Add local bucket (copy directly since scoop bucket add requires a git URL)
           Copy-Item $env:GITHUB_WORKSPACE "$env:USERPROFILE\scoop\buckets\extras-plus" -Recurse
@@ -81,16 +84,27 @@ jobs:
                       $failed = $true
                   }
               } else {
-                  # CLI tool: just verify it executes
+                  # CLI tool: resolve the actual file path and execute it
                   Write-Host "[$appName] Testing CLI execution..." -ForegroundColor Yellow
 
-                  # Run the command directly (Scoop shims handle .py, .bat, etc.)
-                  $output = & $binValue 2>&1
-                  $exitCode = $LASTEXITCODE
-                  $outputStr = $output | Out-String
-                  if ($outputStr) { Write-Host "[$appName] Output: $outputStr" -ForegroundColor DarkGray }
-                  # CLI tools often exit non-zero for missing args, that's expected behavior
-                  Write-Host "[$appName] PASSED: CLI executed (exit code: $exitCode)" -ForegroundColor Green
+                  $binFile = [System.IO.Path]::GetFileName($binValue) -replace '#.*', ''
+                  $binExt = [System.IO.Path]::GetExtension($binFile).ToLower()
+
+                  if ($binExt -eq '.py') {
+                      # Python script: find the actual file in the app directory
+                      $appDir = "$env:USERPROFILE\scoop\apps\$appName\current"
+                      $pyFile = Get-ChildItem $appDir -Filter $binFile -Recurse | Select-Object -First 1
+                      if ($pyFile) {
+                          $output = python $pyFile.FullName 2>&1
+                          Write-Host "[$appName] PASSED: CLI executed successfully" -ForegroundColor Green
+                      } else {
+                          Write-Host "[$appName] FAILED: Could not find script file" -ForegroundColor Red
+                          $failed = $true
+                      }
+                  } else {
+                      $output = & $binValue 2>&1
+                      Write-Host "[$appName] PASSED: CLI executed successfully" -ForegroundColor Green
+                  }
               }
 
               # Cleanup
