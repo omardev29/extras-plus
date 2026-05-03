@@ -28,8 +28,8 @@ jobs:
 
           scoop install git
 
-          # Add local bucket
-          scoop bucket add extras-plus $env:GITHUB_WORKSPACE
+          # Add local bucket (copy directly since scoop bucket add requires a git URL)
+          Copy-Item $env:GITHUB_WORKSPACE "$env:USERPROFILE\scoop\buckets\extras-plus" -Recurse
 
           # Test all apps
           $bucketPath = "$env:GITHUB_WORKSPACE\bucket"
