@@ -1,15 +1,17 @@
 {
-    "version": "main",
+    "version": "win",
     "description": "A POSIX layer with Linux-like methods for PowerShell on Windows",
     "homepage": "https://github.com/omardev29/win-posix-layer",
     "license": "MIT",
-    "url": "https://github.com/omardev29/win-posix-layer/archive/refs/heads/main.zip",
-    "hash": "99118edbe19cee015f384356f409cd3ae8f7465892e0dc5f74b2449ef9a0372e",
-    "checkver": "github",
+    "url": "https://github.com/omardev29/win-posix-layer/releases/download/win/win-posix-layer-main.rar",
+    "hash": "91f6c1c3b89ae83e98af7518b35de698a3c08524e8fb5810bd99011224ea0274",
+    "checkver": {
+        "github": "https://github.com/omardev29/win-posix-layer"
+    },
+    "autoupdate": {
+        "url": "https://github.com/omardev29/win-posix-layer/releases/download/$version/win-posix-layer-main.rar"
+    },
     "extract_dir": "win-posix-layer-main",
-    "pre_install": [
-        "Get-ChildItem \"$dir\" -Recurse | Where-Object { $_.Name -match '^(LICENSE|README\\.md)$' } | Remove-Item -Force -ErrorAction SilentlyContinue"
-    ],
     "post_install": [
         "$profileDir = \"$env:USERPROFILE\\Documents\\PowerShell\"",
         "New-Item $profileDir -ItemType Directory -Force | Out-Null",

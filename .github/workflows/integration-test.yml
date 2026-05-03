@@ -26,7 +26,7 @@ jobs:
           # Refresh PATH so scoop is available in this session
           $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 
-          scoop install git python
+          scoop install git python 7zip
 
           # Refresh PATH again for python
           $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
