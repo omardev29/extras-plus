@@ -7,8 +7,9 @@
     "hash": "99118edbe19cee015f384356f409cd3ae8f7465892e0dc5f74b2449ef9a0372e",
     "extract_dir": "win-posix-layer-main",
     "pre_install": [
-        "@' > \"$dir\\postinstall.ps1\"",
-        "# Post-install script for win-posix-layer",
+        "Get-ChildItem \"$dir\" -Recurse | Where-Object { $_.Name -match '^(LICENSE|README\\.md)$' } | Remove-Item -Force -ErrorAction SilentlyContinue"
+    ],
+    "post_install": [
         "$profileDir = \"$env:USERPROFILE\\Documents\\PowerShell\"",
         "New-Item $profileDir -ItemType Directory -Force | Out-Null",
         "$profilePath = Join-Path $profileDir \"Microsoft.PowerShell_profile.ps1\"",
@@ -19,15 +20,13 @@
         "    $content = Get-Content $profilePath -Raw",
         "    if ($content -notlike \"*$modulePath*\") {",
         "        Add-Content $profilePath \"\"",
-        "        Add-Content $profilePath \"Import-Module \\\"$modulePath\\\"\"",
+        "        Add-Content $profilePath \"Import-Module '$modulePath'\"",
         "    }",
-        "} else {",
-        "    Set-Content $profilePath \"Import-Module \\\"$modulePath\\\"\"",
         "}",
-        "@'",
-        "Get-ChildItem \"$dir\" -Recurse | Where-Object { $_.Name -match '^(LICENSE|README\\.md)$' } | Remove-Item -Force -ErrorAction SilentlyContinue"
+        "else {",
+        "    Set-Content $profilePath \"Import-Module '$modulePath'\"",
+        "}"
     ],
-    "post_install": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$dir\\postinstall.ps1\"",
     "bin": [],
     "notes": "The module has been added to your PowerShell profile. Restart PowerShell or run . $PROFILE to load it. External tools like eza, bat, ripgrep, duf, zoxide, and superfile are recommended for full functionality."
 }
