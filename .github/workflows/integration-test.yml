@@ -16,18 +16,22 @@ jobs:
       - name: Checkout Bucket
         uses: actions/checkout@v4
 
-      - name: Setup Scoop
-        run: |
-          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-          irm get.scoop.sh | iex
-          scoop install git
-
-      - name: Add Local Bucket
-        run: scoop bucket add extras-plus $env:GITHUB_WORKSPACE
-
-      - name: Test All Apps
+      - name: Install & Test Apps
         shell: pwsh
         run: |
+          # Setup Scoop
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+          irm get.scoop.sh | iex
+
+          # Refresh PATH so scoop is available in this session
+          $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+          scoop install git
+
+          # Add local bucket
+          scoop bucket add extras-plus $env:GITHUB_WORKSPACE
+
+          # Test all apps
           $bucketPath = "$env:GITHUB_WORKSPACE\bucket"
           $failed = $false
 
@@ -50,7 +54,6 @@ jobs:
 
               if ($manifest.bin) {
                   $binVal = if ($manifest.bin -is [array]) { $manifest.bin[0] } else { $manifest.bin }
-                  # Handle hash rename like "app.exe#/dl.exe"
                   $exeName = [System.IO.Path]::GetFileName($binVal) -replace '#.*', ''
                   $exeName = [System.IO.Path]::GetFileNameWithoutExtension($exeName)
               } elseif ($manifest.shortcuts) {
