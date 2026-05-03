@@ -55,6 +55,110 @@ jobs:
               $manifest = Get-Content $_.FullName | ConvertFrom-Json
               $hasShortcuts = $null -ne $manifest.shortcuts
               $binValue = $null
+              $isEmptyBin = $false
+
+              if ($manifest.bin) {
+                  if ($manifest.bin -is [array] -and $manifest.bin.Count -eq 0) {
+                      $isEmptyBin = $true
+                  } else {
+                      $binValue = if ($manifest.bin -is [array]) { $manifest.bin[0] } else { $manifest.bin }
+                  }
+              }
+
+              if ($isEmptyBin) {
+                  # Special case: module-only app (like win-posix-layer)
+                  Write-Host "[$appName] Testing module-only app..." -ForegroundColor Yellow
+
+                  $appDir = "$env:USERPROFILE\scoop\apps\$appName\current"
+                  $moduleFile = Get-ChildItem $appDir -Filter "WinPosixLayer.psd1" -Recurse | Select-Object -First 1
+
+                  if ($moduleFile) {
+                      Write-Host "[$appName] Checking module file exists..." -ForegroundColor Yellow
+                      if (Test-Path $moduleFile.FullName) {
+                          Write-Host "[$appName] PASSED: Module file found at $($moduleFile.FullName)" -ForegroundColor Green
+
+                          # Check if module was added to PowerShell profile
+                          $profileDir = "$env:USERPROFILE\Documents\PowerShell"
+                          $profilePath = "$profileDir\Microsoft.PowerShell_profile.ps1"
+                          if (Test-Path $profilePath) {
+                              $profileContent = Get-Content $profilePath -Raw
+                              if ($profileContent -match [regex]::Escape("Import-Module `"$($moduleFile.FullName)`"")) {
+                                  Write-Host "[$appName] PASSED: Import-Module found in profile" -ForegroundColor Green
+                              } else {
+                                  Write-Host "[$appName] WARNING: Import-Module not found in profile" -ForegroundColor Yellow
+                              }
+                          } else {
+                              Write-Host "[$appName] WARNING: Profile not created" -ForegroundColor Yellow
+                          }
+                      } else {
+                          Write-Host "[$appName] FAILED: Module file not found" -ForegroundColor Red
+                          $failed = $true
+                      }
+                  } else {
+                      Write-Host "[$appName] FAILED: Module manifest not found" -ForegroundColor Red
+                      $failed = $true
+                  }
+              } elseif (-not $binValue -and -not $hasShortcuts) {
+                  Write-Host "[$appName] SKIPPED: No bin or shortcuts in manifest" -ForegroundColor DarkGray
+                  scoop uninstall $appName --purge
+                  return
+              } elseif ($hasShortcuts) {
+                  # GUI app: launch and check for running process
+                  $shortcutTarget = $manifest.shortcuts[0][0]
+                  $exeName = [System.IO.Path]::GetFileNameWithoutExtension($shortcutTarget)
+
+                  Write-Host "[$appName] Launching '$exeName' (GUI)..." -ForegroundColor Yellow
+                  Start-Process $exeName -ErrorAction Stop
+                  Start-Sleep -Seconds 15
+
+                  $proc = Get-Process -Name $exeName -ErrorAction SilentlyContinue
+                  if ($proc) {
+                      Write-Host "[$appName] PASSED: Process running (PID: $($proc[0].Id))" -ForegroundColor Green
+                      $proc | Stop-Process -Force -ErrorAction SilentlyContinue
+                  } else {
+                      Write-Host "[$appName] FAILED: Process '$exeName' not found after launch" -ForegroundColor Red
+                      $failed = $true
+                  }
+              } else {
+                  # CLI tool: resolve the actual file path and execute it
+                  Write-Host "[$appName] Testing CLI execution..." -ForegroundColor Yellow
+
+                  $binFile = [System.IO.Path]::GetFileName($binValue) -replace '#.*', ''
+                  $binExt = [System.IO.Path]::GetExtension($binFile).ToLower()
+
+                  if ($binExt -eq '.py') {
+                      # Python script: find the actual file in the app directory
+                      $appDir = "$env:USERPROFILE\scoop\apps\$appName\current"
+                      $pyFile = Get-ChildItem $appDir -Filter $binFile -Recurse | Select-Object -First 1
+                      if ($pyFile) {
+                          $output = python $pyFile.FullName 2>&1
+                          Write-Host "[$appName] PASSED: CLI executed successfully" -ForegroundColor Green
+                      } else {
+                          Write-Host "[$appName] FAILED: Could not find script file" -ForegroundColor Red
+                          $failed = $true
+                      }
+                  } else {
+                      $output = & $binValue 2>&1
+                      Write-Host "[$appName] PASSED: CLI executed successfully" -ForegroundColor Green
+                  }
+              }
+
+              # Cleanup
+              Write-Host "[$appName] Uninstalling..." -ForegroundColor Yellow
+              scoop uninstall $appName --purge
+          }
+
+          if ($failed) {
+              Write-Host "`nSome apps failed!" -ForegroundColor Red
+              exit 1
+          } else {
+              Write-Host "`nAll apps passed!" -ForegroundColor Green
+          }
+
+              # Parse manifest
+              $manifest = Get-Content $_.FullName | ConvertFrom-Json
+              $hasShortcuts = $null -ne $manifest.shortcuts
+              $binValue = $null
 
               if ($manifest.bin) {
                   $binValue = if ($manifest.bin -is [array]) { $manifest.bin[0] } else { $manifest.bin }
