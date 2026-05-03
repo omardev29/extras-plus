@@ -193,6 +193,7 @@ jobs:
 
                   $binFile = [System.IO.Path]::GetFileName($binValue) -replace '#.*', ''
                   $binExt = [System.IO.Path]::GetExtension($binFile).ToLower()
+                  }
 
                   if ($binExt -eq '.py') {
                       # Python script: find the actual file in the app directory
