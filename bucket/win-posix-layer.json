@@ -12,20 +12,14 @@
     "post_install": [
         "$profileDir = \"$env:USERPROFILE\\Documents\\PowerShell\"",
         "if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Path $profileDir -Force | Out-Null }",
-        "$profilePath = \"$profileDir\\Microsoft.PowerShell_profile.ps1\"",
+        "$profilePath = Join-Path $profileDir \"Microsoft.PowerShell_profile.ps1\"",
         "$moduleFile = Get-ChildItem \"$dir\" -Filter \"WinPosixLayer.psd1\" -Recurse | Select-Object -First 1",
         "if (-not $moduleFile) { Write-Error \"WinPosixLayer.psd1 not found\"; exit 1 }",
         "$modulePath = $moduleFile.FullName",
-        "$importCmd = \"Import-Module \\\"$modulePath\\\"\"",
-        "if (Test-Path $profilePath) {",
-        "    $content = Get-Content $profilePath -Raw",
-        "    if ($content -notlike \"*$modulePath*\") {",
-        "        Add-Content $profilePath \"\"",
-        "        Add-Content $profilePath $importCmd",
-        "    }",
-        "} else {",
-        "    Set-Content $profilePath $importCmd",
-        "}"
+        "$line = \"Import-Module \\\"\" + $modulePath + \"\\\"\"",
+        "$profileExists = Test-Path $profilePath",
+        "if ($profileExists) { $c = Get-Content $profilePath -Raw; if ($c -notlike \"*$modulePath*\") { Add-Content $profilePath \"\" ; Add-Content $profilePath $line } }",
+        "else { Set-Content $profilePath $line }"
     ],
     "bin": [],
     "notes": "The module has been added to your PowerShell profile. Restart PowerShell or run . $PROFILE to load it. External tools like eza, bat, ripgrep, duf, zoxide, and superfile are recommended for full functionality."
